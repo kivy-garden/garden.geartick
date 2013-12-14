@@ -4,7 +4,8 @@ from kivy.uix.image import Image
 from math import atan2
 import os
 from kivy.properties import (NumericProperty, ReferenceListProperty,
-    BoundedNumericProperty, AliasProperty, ListProperty, StringProperty)
+    BoundedNumericProperty, AliasProperty, ListProperty, StringProperty,
+    OptionProperty)
 
 from kivy.lang import Builder
 
@@ -40,8 +41,18 @@ _dir = os.path.dirname(os.path.realpath(__file__))
 
 class GearTick(ButtonBehavior, Image):
 
+    orientation = OptionProperty('clockwise', options=('clockwise',
+                                                       'anti-clockwise'))
+    ''' This selects the direction of the rotation that increases the value.
+
+    :data:`orientation`  is a :class:`~kivy.properties.OptionProperty`
+    defaults to 'clockwise'
+    '''
+
     background_color = ListProperty((1, 1, 1, 1))
-    ''' Color for the background image. Defaults to 1, 1, 1, 1
+    ''' :data:`background_color` is a the color used for the background image.
+
+    :data:`background_color` is a :class:`ListProperty`Defaults to 1, 1, 1, 1
     '''
 
     foreground_color = ListProperty((.5, .5, .5, .5))
@@ -154,7 +165,8 @@ class GearTick(ButtonBehavior, Image):
     '''
 
     def on_value(self, instance, value):
-        self.rotation = 360*self.value_normalized
+        ori = -1 if self.orientation[0] == 'c' else 1
+        self.rotation = (ori*360) * self.value_normalized
 
     def get_angle(self, x, y, center=None):
         # calculate touch.angle
@@ -174,25 +186,26 @@ class GearTick(ButtonBehavior, Image):
     def on_touch_move(self, touch, scroll=False):
         if not scroll and touch.grab_current != self:
             return
+        ori = -1 if self.orientation[0] == 'c' else 1
 
         if scroll:
             difference = -1 if touch.button in ('scrollup', 'scrollleft')\
                             else +1
         else:
             angle = self.get_angle(*touch.pos)
-            #self.rotation = angle - touch.oangle
+            print angle, touch.pangle
+            difference = abs(angle) - abs(touch.pangle)
             if angle < 0:
-                angle = abs(angle)
-                difference = -(angle - touch.pangle)
-            else:
-                difference = angle - touch.pangle
+                difference *= -1
+            print difference
 
         step = (350/self.max)*self.step
         if abs(difference) < step:
             return
+
         touch.pangle = angle
-        self.value = min(self.max,
-                         max(self.min, (self.value + (difference / step))))
+        self.value = min(
+            self.max, max(self.min, (self.value + (ori*(difference / step)))))
 
 if __name__ == '__main__':
     from kivy.app import runTouchApp
@@ -215,6 +228,7 @@ GridLayout:
             #max: 100
             #background_image: 'background.png'
             #overlay_image: 'gear.png'
+            #orientation: 'anti-clockwise'
             on_release:
                 Animation.stop_all(self)
                 Animation(value=0).start(self)
