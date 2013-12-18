@@ -187,19 +187,18 @@ class GearTick(ButtonBehavior, Image):
         if not scroll and touch.grab_current != self:
             return
         ori = -1 if self.orientation[0] == 'c' else 1
+        step = (350/self.max)*self.step
+        angle = self.get_angle(*touch.pos)
 
         if scroll:
             difference = -1 if touch.button in ('scrollup', 'scrollleft')\
                             else +1
+            difference =  difference * step
         else:
-            angle = self.get_angle(*touch.pos)
-            print angle, touch.pangle
             difference = abs(angle) - abs(touch.pangle)
             if angle < 0:
                 difference *= -1
-            print difference
 
-        step = (350/self.max)*self.step
         if abs(difference) < step:
             return
 
@@ -229,8 +228,9 @@ GridLayout:
             #background_image: 'background.png'
             #overlay_image: 'gear.png'
             #orientation: 'anti-clockwise'
-            on_release:
-                Animation.stop_all(self)
+            on_touch_up:
+                if self.collide_point(*args[1].pos):\
+                Animation.stop_all(self);\
                 Animation(value=0).start(self)
         Label:
             size_hint: 1, None
