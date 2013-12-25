@@ -84,7 +84,7 @@ class GearTick(ButtonBehavior, Image):
     range = ReferenceListProperty(min, max)
     '''Range of the geartick, in the format (minimum value, maximum value)::
 
-        >>> geartick = Slider(min=10, max=80)
+        >>> geartick = GearTick(min=10, max=80)
         >>> geartick.range
         [10, 80]
         >>> geartick.range = (20, 100)
@@ -138,7 +138,7 @@ class GearTick(ButtonBehavior, Image):
                                      bind=('value', 'min', 'max', 'step'))
     '''Normalized value inside the :data:`range` (min/max) to 0-1 range::
 
-        >>> geartick = Slider(value=50, min=0, max=100)
+        >>> geartick = GearTick(value=50, min=0, max=100)
         >>> geartick.value
         50
         >>> geartick.value_normalized
